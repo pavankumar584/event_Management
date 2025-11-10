@@ -1,6 +1,5 @@
 const express = require("express");
 const { authMiddleware } = require("../middlewares/auth.middleware");
-const adminMiddleware = require("../middlewares/admin.middleware");
 const upload = require("../middlewares/upload.middleware");
 const validationMiddleware = require("../middlewares/validation.middleware");
 const versionMiddleware = require("../middlewares/version.middleware");

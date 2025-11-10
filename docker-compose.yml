@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  mongo_db:
+    image: mongo:latest
+    container_name: mongo_db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  event_app:
+    build: .
+    container_name: event_app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file: .env
+    depends_on:
+      - mongo_db
+    command: npm run dev
+
+volumes:
+  mongo_data:
+# $ docker compose up --build

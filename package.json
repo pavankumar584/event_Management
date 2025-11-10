@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/app.js"
+    "dev": "cross-env NODE_ENV=development nodemon src/app.js",
+    "start": "cross-env NODE_ENV=production node src/app.js"
   },
   "keywords": [],
   "author": "",
@@ -21,5 +22,8 @@
     "nodemailer": "^7.0.10",
     "nodemon": "^3.1.10",
     "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  event_app:
+    build: .
+    container_name: event_app_prod
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file: .env.prod
+    command: npm start
+
+
+# docker compose -f docker-compose.prod.yml up --build -d
