@@ -1,0 +1,563 @@
+openapi: 3.0.0
+info:
+  title: Event Management API
+  version: 1.0.0
+  description: Complete API documentation for authentication, users, events, and admin modules.
+
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+tags:
+  - name: Auth
+    description: Authentication and user login/register APIs
+  - name: User
+    description: User profile and booking management APIs
+  - name: Event
+    description: Event management APIs for organizers, admins, and users
+  - name: Admin
+    description: Admin-only APIs for managing users, organizers, events, and analytics
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account with username, email, and password.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  example: PavanAmballa
+                email:
+                  type: string
+                  example: pavan@example.com
+                password:
+                  type: string
+                  example: P@ssword123
+      responses:
+        201:
+          description: User registered successfully
+        400:
+          description: Validation error
+        500:
+          description: Internal server error
+
+  /auth/login:
+    post:
+      summary: Login user
+      description: Authenticate user and return a JWT token.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: pavan@example.com
+                password:
+                  type: string
+                  example: P@ssword123
+      responses:
+        200:
+          description: Login successful
+        401:
+          description: Invalid credentials
+        500:
+          description: Internal server error
+
+  /auth/logout:
+    post:
+      summary: Logout user
+      description: Invalidate current user session token.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Logout successful
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /user/getProfile:
+    get:
+      summary: Get user profile
+      description: Retrieve details of the currently authenticated user.
+      tags: [User]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched user profile
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /user/updateProfile:
+    put:
+      summary: Update user profile
+      description: Update user details such as name, email, or profile picture.
+      tags: [User]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: PavanAmballa
+                email:
+                  type: string
+                  example: pavan@example.com
+                profilePic:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Profile updated successfully
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /user/booking:
+    post:
+      summary: Book tickets for an event
+      description: Allows a user to book tickets for a specific event.
+      tags: [User]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [eventId, tickets]
+              properties:
+                eventId:
+                  type: string
+                  example: 674edb5a3d58acff247e8e4b
+                tickets:
+                  type: integer
+                  example: 2
+      responses:
+        201:
+          description: Booking successful
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+        404:
+          description: Event not found
+        500:
+          description: Internal server error
+
+  /user/booking-history:
+    get:
+      summary: Get user booking history
+      description: Fetch all previous bookings made by the authenticated user.
+      tags: [User]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched booking history
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /event/event-browse:
+    get:
+      summary: Browse published events
+      description: Publicly browse all published upcoming events with filters and sorting.
+      tags: [Event]
+      responses:
+        200:
+          description: Successfully fetched published events
+        500:
+          description: Internal server error
+
+  /event/event/{id}:
+    get:
+      summary: Get event by ID
+      description: Retrieve event details by event ID (publicly accessible).
+      tags: [Event]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully fetched event details
+        404:
+          description: Event not found
+        500:
+          description: Internal server error
+
+  /event/create:
+    post:
+      summary: Create a new event
+      description: Create a new event (Organizer only).
+      tags: [Event]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                [title, description, category, date, time, totalTickets, location, ticketPrice]
+              properties:
+                title:
+                  type: string
+                  example: Tech Summit 2025
+                description:
+                  type: string
+                  example: An event for developers and startups
+                category:
+                  type: string
+                  example: Technology
+                date:
+                  type: string
+                  example: 2025-12-10
+                time:
+                  type: string
+                  example: 10:00 AM
+                totalTickets:
+                  type: integer
+                  example: 100
+                location:
+                  type: string
+                  example: Bangalore
+                ticketPrice:
+                  type: number
+                  example: 499
+      responses:
+        201:
+          description: Event created successfully
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal server error
+
+  /event/allEvent:
+    get:
+      summary: Get all events (Admin & Organizer)
+      description: Retrieve all events created by the organizer or all events in the system for admins.
+      tags: [Event]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched all events
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /event/update/{id}:
+    put:
+      summary: Update event details
+      description: Update an event (Organizer only).
+      tags: [Event]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Event updated successfully
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+        404:
+          description: Event not found
+        500:
+          description: Internal server error
+
+  /event/delete/{id}:
+    delete:
+      summary: Delete event
+      description: Delete an event (Admin or Organizer only).
+      tags: [Event]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Event deleted successfully
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        404:
+          description: Event not found
+        500:
+          description: Internal server error
+
+  /event/publish/{id}:
+    patch:
+      summary: Publish or unpublish event
+      description: Toggle event publish status (Admin or Organizer only).
+      tags: [Event]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Event publish status updated
+        401:
+          description: Unauthorized
+        404:
+          description: Event not found
+        500:
+          description: Internal server error
+
+  /event/availability/{eventId}:
+    get:
+      summary: Get ticket availability
+      description: Check remaining ticket count for a specific event.
+      tags: [Event]
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully fetched ticket availability
+        404:
+          description: Event not found
+        500:
+          description: Internal server error
+
+  /admin/getAllUser:
+    get:
+      summary: Get all users
+      description: Retrieve a list of all registered users (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched all users
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal server error
+
+  /admin/getUser/{id}:
+    get:
+      summary: Get user by ID
+      description: Retrieve details of a specific user by ID (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully fetched user details
+        404:
+          description: User not found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /admin/getAllOrganizer:
+    get:
+      summary: Get all organizers
+      description: Retrieve all organizer accounts (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched all organizers
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+        500:
+          description: Internal server error
+
+  /admin/getOrganizer/{id}:
+    get:
+      summary: Get organizer by ID
+      description: Retrieve details of a specific organizer (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successfully fetched organizer details
+        404:
+          description: Organizer not found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /admin/ban-user/{id}:
+    post:
+      summary: Ban user by ID
+      description: Ban a user account by ID (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User banned successfully
+        404:
+          description: User not found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /admin/unban-user/{id}:
+    post:
+      summary: Unban user by ID
+      description: Remove a user from the banned list (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User unbanned successfully
+        404:
+          description: User not found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /admin/banned-users:
+    get:
+      summary: Get all banned users
+      description: Retrieve a list of all banned users (Admin only).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched banned users
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /admin/notify/{eventId}:
+    post:
+      summary: Notify waitlist users
+      description: Notify users on the waitlist for a specific event when tickets are available.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Waitlist users notified successfully
+        404:
+          description: Event not found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+  /admin/analytics/dashboard:
+    get:
+      summary: Get analytics dashboard
+      description: Retrieve analytics data such as total users, events, bookings, and revenue.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successfully fetched analytics data
+        401:
+          description: Unauthorized
+        500:
+          description: Internal server error
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

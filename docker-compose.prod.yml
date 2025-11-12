@@ -8,7 +8,6 @@ services:
     ports:
       - "3000:3000"
     env_file: .env.prod
+    environment:
+      - NODE_ENV=production
     command: npm start
-
-
-# docker compose -f docker-compose.prod.yml up --build -d
