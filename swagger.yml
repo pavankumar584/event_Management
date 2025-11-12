@@ -10,7 +10,7 @@ servers:
 
 tags:
   - name: Auth
-    description: Authentication and user login/register APIs
+    description: Authentication and user login/register/logout APIs
   - name: User
     description: User profile and booking management APIs
   - name: Event
