@@ -4,7 +4,8 @@ const RegisterValidation = require("../validation/auth/register.validation");
 const versionMiddleware = require("../middlewares/version.middleware");
 const validationMiddleware = require("../middlewares/validation.middleware");
 const { login, register, logout } = require("../controllers/auth.controller");
-const {authMiddleware} = require("../middlewares/auth.middleware");
+const { authMiddleware } = require("../middlewares/auth.middleware");
+const loginRateLimiter = require("../middlewares/rateLimiter.middleware");
 
 const router = express.Router();
 
@@ -12,8 +13,10 @@ router.post(
   "/login",
   versionMiddleware(["1.0.0"]),
   validationMiddleware(LoginValidation, "body"),
+  loginRateLimiter, // Redis limiter
   login
 );
+
 router.post(
   "/register",
   versionMiddleware(["1.0.0"]),
